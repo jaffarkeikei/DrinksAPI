@@ -9,7 +9,7 @@ Example usage:
 """
 
 
-from flask import Flask
+from flask import Flask, request, redirect, url_for, render_template
 from extensions import db
 from models import Drink
 
@@ -17,18 +17,18 @@ from models import Drink
 def create_app():
     """
     Initializes the Flask application with necessary configurations and database setup.
-    
+
     This function creates a Flask application instance, configures it to use a SQLite database, initializes the database with the application, and defines routes for the application. It returns the configured Flask application instance.
-    
+
     Returns:
         app: The Flask application instance configured with routes and database.
-    
+
     Example:
         Creating an app instance and running it:
-        
+
         app = create_app()
         app.run(debug=True)
-        
+
         This will start a Flask web server running in debug mode, with routes defined for the homepage and fetching drinks.
     """
     flask_app = Flask(__name__)
@@ -46,6 +46,19 @@ def create_app():
         drinks = Drink.query.all()
         drinks_data = [{"name": drink.name, "description": drink.description} for drink in drinks]
         return {"drinks": drinks_data}
+
+    @flask_app.route('/add_drink', methods=['GET'])
+    def show_add_drink_form():
+        return render_template('add_drink.html')
+
+    @flask_app.route('/add_drink', methods=['POST'])
+    def add_drink():
+        name = request.form['name']
+        description = request.form['description']
+        new_drink = Drink(name=name, description=description)
+        db.session.add(new_drink)
+        db.session.commit()
+        return redirect(url_for('show_add_drink_form'))
 
     return flask_app
 
