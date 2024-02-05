@@ -1,67 +1,25 @@
 """
-This section of the app.py file is dedicated to initializing the Flask application and setting up routes for the web service. It includes the creation of the Flask app, configuration of the database URI, initialization of the database with the Flask app, and definition of routes for the homepage and fetching drinks from the database.
-
-The Flask application is configured to connect to a SQLite database named 'data.db'. The database is initialized with the Flask app using the `db.init_app(app)` method. Two routes are defined: the homepage route ('/') which returns a simple greeting, and the '/drinks' route which fetches all drinks from the database and returns them in a JSON format.
-
-Example usage:
-- Accessing the homepage by navigating to 'http://localhost:5000/' will display 'Hello!'.
-- Accessing the drinks list by navigating to 'http://localhost:5000/drinks' will display a JSON object containing all drinks in the database.
+This is the main script for the Flask application.
+It creates the Flask app, initializes the database, registers the routes, and runs the app.
 """
 
 
-from flask import Flask, request, redirect, url_for, render_template
-from extensions import db
-from models import Drink
 
+from flask import Flask
+from extensions import db
+from routes import routes
 
 def create_app():
     """
-    Initializes the Flask application with necessary configurations and database setup.
-
-    This function creates a Flask application instance, configures it to use a SQLite database, initializes the database with the application, and defines routes for the application. It returns the configured Flask application instance.
-
-    Returns:
-        app: The Flask application instance configured with routes and database.
-
-    Example:
-        Creating an app instance and running it:
-
-        app = create_app()
-        app.run(debug=True)
-
-        This will start a Flask web server running in debug mode, with routes defined for the homepage and fetching drinks.
+    This function creates the Flask app, initializes the database, registers the routes, and runs the app.
     """
     flask_app = Flask(__name__)
     flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-
     db.init_app(flask_app)
-
-    # Define routes
-    @flask_app.route('/')
-    def index():
-        return 'Hello!'
-
-    @flask_app.route('/drinks')
-    def get_drinks():
-        drinks = Drink.query.all()
-        drinks_data = [{"name": drink.name, "description": drink.description} for drink in drinks]
-        return {"drinks": drinks_data}
-
-    @flask_app.route('/add_drink', methods=['GET'])
-    def show_add_drink_form():
-        return render_template('add_drink.html')
-
-    @flask_app.route('/add_drink', methods=['POST'])
-    def add_drink():
-        name = request.form['name']
-        description = request.form['description']
-        new_drink = Drink(name=name, description=description)
-        db.session.add(new_drink)
-        db.session.commit()
-        return redirect(url_for('show_add_drink_form'))
-
+    flask_app.register_blueprint(routes)
     return flask_app
 
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True)
+    print("The Flask application is running successfully.")

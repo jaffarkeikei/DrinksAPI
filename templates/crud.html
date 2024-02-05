@@ -1,0 +1,147 @@
+<!-- templates/crud.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD Operations</title>
+</head>
+<body>
+    <h1>CRUD Operations</h1>
+
+    <h2>Add a New Drink</h2>
+    <form id="addDrinkForm">
+        <label for="name">Drink Name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description" required>
+        <button type="submit" form="addDrinkForm" value="Submit">Add Drink</button>
+    </form>
+
+    <h2>Update a Drink</h2>
+    <form id="updateDrinkForm">
+        <label for="drinkId">Drink ID:</label>
+        <input type="number" id="drinkId" name="drinkId" required>
+        <label for="newName">New Drink Name:</label>
+        <input type="text" id="newName" name="newName" required>
+        <label for="newDescription">New Description:</label>
+        <input type="text" id="newDescription" name="newDescription" required>
+        <button type="submit" form="updateDrinkForm" value="Submit">Update Drink</button>
+    </form>
+
+    <h2>Delete a Drink</h2>
+    <form id="deleteDrinkForm">
+        <label for="drinkIdToDelete">Drink ID to Delete:</label>
+        <input type="number" id="drinkIdToDelete" name="drinkIdToDelete" required>
+        <button type="submit" form="deleteDrinkForm" value="Submit">Delete Drink</button>
+    </form>
+
+    <h2>Get All Drinks</h2>
+    <form id="getAllDrinksForm">
+        <button type="submit" form="getAllDrinksForm" value="Submit">Get All Drinks</button>
+    </form>
+
+    <h2>Get a Specific Drink</h2>
+    <form id="getDrinkForm">
+        <label for="drinkIdToGet">Drink ID to Get:</label>
+        <input type="number" id="drinkIdToGet" name="drinkIdToGet" required>
+        <button type="submit" form="getDrinkForm" value="Submit">Get Drink</button>
+    </form>
+
+    <script>
+        document.getElementById('addDrinkForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = event.target;
+            var data = new FormData(form);
+            fetch('/add_drink', {
+                method: 'POST',
+                body: data
+            }).then(function(response) {
+                if (response.ok) {
+                    form.reset();
+                    alert('Drink added successfully');
+                } else {
+                    alert('Failed to add drink');
+                }
+            });
+        });
+
+        document.getElementById('updateDrinkForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = event.target;
+            var data = new FormData(form);
+            fetch('/update_drink', {
+                method: 'PUT',
+                body: data
+            }).then(function(response) {
+                if (response.ok) {
+                    form.reset();
+                    alert('Drink updated successfully');
+                } else {
+                    alert('Failed to update drink');
+                }
+            });
+        });
+
+        document.getElementById('deleteDrinkForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = event.target;
+            var data = new FormData(form);
+            fetch('/delete_drink', {
+                method: 'DELETE',
+                body: data
+            }).then(function(response) {
+                if (response.ok) {
+                    alert('Drink deleted successfully');
+                } else {
+                    alert('Failed to delete drink');
+                }
+            }).catch(function(error) {
+                alert('Network error');
+            });
+        });
+
+        document.getElementById('getAllDrinksForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            fetch('/drinks', {
+                method: 'GET'
+            }).then(function(response) {
+                if (response.ok) {
+                    response.json().then(function(data) {
+                        var drinksList = document.getElementById('drinksList');
+                        drinksList.innerHTML = '';
+                        data.forEach(function(drink) {
+                            var drinkItem = document.createElement('li');
+                            drinkItem.textContent = drink.name + ': ' + drink.description;
+                            drinksList.appendChild(drinkItem);
+                        });
+                    });
+                } else {
+                    alert('Failed to get drinks');
+                }
+            }).catch(function(error) {
+                alert('Network error');
+            });
+        });
+
+        document.getElementById('getDrinkForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = event.target;
+            var data = new FormData(form);
+            fetch('/drinks/' + data.get('drinkIdToGet'), {
+                method: 'GET'
+            }).then(function(response) {
+                if (response.ok) {
+                    response.json().then(function(data) {
+                        var drinkDetails = document.getElementById('drinkDetails');
+                        drinkDetails.textContent = 'Name: ' + data.name + ', Description: ' + data.description;
+                    });
+                } else {
+                    alert('Failed to get drink');
+                }
+            }).catch(function(error) {
+                alert('Network error');
+            });
+        });
+    </script>
+</body>
+</html>
